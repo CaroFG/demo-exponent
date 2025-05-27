@@ -83,14 +83,86 @@ export default function Home() {
   const [allPossibleFacets, setAllPossibleFacets] = useState<FacetDistribution>({});
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
 
+  // Handle search
+  useEffect(() => {
+    const searchProfessionals = async () => {
+      // First, get the current filter state
+      const currentFilters = [
+        ...(selectedOfficeLocations.length > 0 
+          ? [`OfficeLocation IN [${selectedOfficeLocations.map(loc => `"${loc}"`).join(', ')}]`] 
+          : []),
+        ...(selectedExpertise.length > 0 
+          ? [`ExpertiseName IN [${selectedExpertise.map(exp => `"${exp}"`).join(', ')}]`] 
+          : []),
+        ...(selectedCapabilities.length > 0 
+          ? [`Capabilities.CapabilityName IN [${selectedCapabilities.map(cap => `"${cap}"`).join(', ')}]`] 
+          : []),
+        ...(selectedStates.length > 0 
+          ? [`StateLicenses.State IN [${selectedStates.map(state => `"${state}"`).join(', ')}]`] 
+          : []),
+        ...(selectedLicenseTitles.length > 0 
+          ? [`StateLicenses.LicenseTitle IN [${selectedLicenseTitles.map(license => `"${license}"`).join(', ')}]`] 
+          : []),
+      ];
+
+      try {
+        // Get search results and facets in a single query
+        const results = await searchClient.index('professionals').search(searchQuery, {
+          attributesToRetrieve: ['_id', 'FirstName', 'LastName', 'Suffix', 'Title', 'ExpertiseName', 'OfficeLocation', 'EducationRecords', 'Overview', 'OverviewReadMore', 'Capabilities', 'StateLicenses'],
+          hybrid: {
+            embedder: selectedEmbedder,
+            semanticRatio: semanticRatio
+          },
+          facets: [
+            'OfficeLocation',
+            'ExpertiseName',
+            'Capabilities.CapabilityName',
+            'StateLicenses.State',
+            'StateLicenses.LicenseTitle'
+          ],
+          filter: currentFilters
+        });
+        
+        // Create final facets keeping all possible values
+        const finalFacets: FacetDistribution = {};
+        Object.keys(allPossibleFacets).forEach(key => {
+          finalFacets[key] = {};
+          // Get all possible values for this facet
+          const allValues = Object.keys(allPossibleFacets[key] || {});
+          // For each value, use the count from MeiliSearch if available, otherwise 0
+          allValues.forEach(value => {
+            finalFacets[key][value] = results.facetDistribution?.[key]?.[value] || 0;
+          });
+        });
+
+        setProfessionals(results.hits as Professional[]);
+        setFacetDistribution(finalFacets);
+      } catch (error) {
+        console.error('Error updating search results:', error);
+      }
+    };
+
+    // Add a small delay to prevent too many requests when rapidly unchecking filters
+    const timeoutId = setTimeout(() => {
+      searchProfessionals();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, selectedOfficeLocations, selectedExpertise, selectedCapabilities, 
+      selectedStates, selectedLicenseTitles, allPossibleFacets, selectedEmbedder, semanticRatio]);
+
   // Add a new effect to fetch all possible facets on component mount
   useEffect(() => {
     const fetchAllFacets = async () => {
-      const results = await searchClient.index('professionals').search('', {
-        facets: ['*'],
-        limit: 0 // We only need facets, not results
-      });
-      setAllPossibleFacets(results.facetDistribution || {});
+      try {
+        const results = await searchClient.index('professionals').search('', {
+          facets: ['*'],
+          limit: 0 // We only need facets, not results
+        });
+        setAllPossibleFacets(results.facetDistribution || {});
+      } catch (error) {
+        console.error('Error fetching all facets:', error);
+      }
     };
 
     fetchAllFacets();
@@ -123,54 +195,6 @@ export default function Home() {
 
     return merged;
   };
-
-  // Handle search
-  useEffect(() => {
-    const searchProfessionals = async () => {
-      const searchParams = {
-        attributesToRetrieve: ['_id', 'FirstName', 'LastName', 'Suffix', 'Title', 'ExpertiseName', 'OfficeLocation', 'EducationRecords', 'Overview', 'OverviewReadMore', 'Capabilities', 'StateLicenses'],
-        hybrid: {
-          embedder: selectedEmbedder,
-          semanticRatio: semanticRatio
-        },
-        facets: [
-          'OfficeLocation',
-          'ExpertiseName',
-          'Capabilities.CapabilityName',
-          'StateLicenses.State',
-          'StateLicenses.LicenseTitle'
-        ],
-        filter: [
-          ...(selectedOfficeLocations.length > 0 
-            ? selectedOfficeLocations.map(loc => `OfficeLocation = "${loc}"`) 
-            : []),
-          ...(selectedExpertise.length > 0 
-            ? selectedExpertise.map(exp => `ExpertiseName = "${exp}"`) 
-            : []),
-          ...(selectedCapabilities.length > 0 
-            ? selectedCapabilities.map(cap => `Capabilities.CapabilityName = "${cap}"`) 
-            : []),
-          ...(selectedStates.length > 0 
-            ? selectedStates.map(state => `StateLicenses.State = "${state}"`) 
-            : []),
-          ...(selectedLicenseTitles.length > 0 
-            ? selectedLicenseTitles.map(license => `StateLicenses.LicenseTitle = "${license}"`) 
-            : []),
-        ]
-      };
-
-      const results = await searchClient.index('professionals').search(searchQuery, searchParams);
-      setProfessionals(results.hits as Professional[]);
-      
-      // Merge current facets with all possible facets to show zero counts
-      setFacetDistribution(
-        mergeFacetDistributions(results.facetDistribution || {}, allPossibleFacets)
-      );
-    };
-
-    searchProfessionals();
-  }, [searchQuery, selectedOfficeLocations, selectedExpertise, selectedCapabilities, 
-      selectedStates, selectedLicenseTitles, allPossibleFacets, selectedEmbedder, semanticRatio]);
 
   return (
     <div className="min-h-screen p-4">
