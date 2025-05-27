@@ -9,6 +9,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
 
 // Initialize MeiliSearch client
 const searchClient = new MeiliSearch({
@@ -78,6 +79,7 @@ interface FacetStats {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmbedder, setSelectedEmbedder] = useState('default');
+  const [semanticRatio, setSemanticRatio] = useState(1.0);
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [selectedOfficeLocations, setSelectedOfficeLocations] = useState<string[]>([]);
   const [selectedExpertise, setSelectedExpertise] = useState<string[]>([]);
@@ -137,7 +139,7 @@ export default function Home() {
         attributesToRetrieve: ['_id', 'FirstName', 'LastName', 'Suffix', 'Title', 'ExpertiseName', 'OfficeLocation', 'EducationRecords', 'Overview', 'OverviewReadMore', 'Capabilities', 'StateLicenses'],
         hybrid: {
           embedder: selectedEmbedder,
-          semanticRatio: 1.0
+          semanticRatio: semanticRatio
         },
         facets: [
           'OfficeLocation',
@@ -178,13 +180,13 @@ export default function Home() {
 
     searchProfessionals();
   }, [searchQuery, selectedOfficeLocations, selectedExpertise, selectedCapabilities, 
-      selectedStates, selectedLicenseTitles, allPossibleFacets, selectedEmbedder]);
+      selectedStates, selectedLicenseTitles, allPossibleFacets, selectedEmbedder, semanticRatio]);
 
   return (
     <div className="min-h-screen p-4">
       {/* Header with search input */}
       <header className="mb-8 max-w-5xl mx-auto">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <Input 
             type="search" 
             placeholder="Search professionals..." 
@@ -205,6 +207,18 @@ export default function Home() {
               <SelectItem value="text-2">Text 2</SelectItem>
             </SelectContent>
           </Select>
+          <div className="flex items-center gap-2 w-[200px]">
+            <span className="text-sm text-muted-foreground">Semantic Ratio:</span>
+            <Slider
+              value={[semanticRatio]}
+              onValueChange={([value]) => setSemanticRatio(value)}
+              min={0}
+              max={1}
+              step={0.1}
+              className="w-[100px]"
+            />
+            <span className="text-sm text-muted-foreground">{semanticRatio.toFixed(1)}</span>
+          </div>
         </div>
       </header>
 
