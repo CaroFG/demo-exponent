@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Button } from "@/components/ui/button"
+import { X } from "lucide-react"
 
 // Initialize MeiliSearch client
 const searchClient = new MeiliSearch({
@@ -241,14 +243,47 @@ export default function Home() {
         {/* Filters sidebar */}
         <aside className="space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg">Filters</CardTitle>
+              {(selectedOfficeLocations.length > 0 || selectedExpertise.length > 0 || 
+                selectedCapabilities.length > 0 || selectedStates.length > 0 || 
+                selectedLicenseTitles.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedOfficeLocations([]);
+                    setSelectedExpertise([]);
+                    setSelectedCapabilities([]);
+                    setSelectedStates([]);
+                    setSelectedLicenseTitles([]);
+                  }}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-6">
               <Accordion type="single" collapsible className="space-y-4">
                 {/* Office Location Accordion Item */}
                 <AccordionItem value="office-location">
-                  <AccordionTrigger>Office Location</AccordionTrigger>
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger>Office Location</AccordionTrigger>
+                    {selectedOfficeLocations.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOfficeLocations([]);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <AccordionContent>
                     <div className="space-y-2">
                       {facetDistribution['OfficeLocation'] && 
@@ -279,7 +314,22 @@ export default function Home() {
 
                 {/* Expertise Accordion Item */}
                 <AccordionItem value="expertise">
-                  <AccordionTrigger>Expertise</AccordionTrigger>
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger>Expertise</AccordionTrigger>
+                    {selectedExpertise.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedExpertise([]);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <AccordionContent>
                     <div className="space-y-2">
                       {facetDistribution['ExpertiseName'] && 
@@ -310,7 +360,22 @@ export default function Home() {
 
                 {/* Capabilities Accordion Item */}
                 <AccordionItem value="capabilities">
-                  <AccordionTrigger>Capabilities</AccordionTrigger>
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger>Capabilities</AccordionTrigger>
+                    {selectedCapabilities.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCapabilities([]);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <AccordionContent>
                     <div className="space-y-2">
                       {facetDistribution['Capabilities.CapabilityName'] && 
@@ -341,7 +406,22 @@ export default function Home() {
 
                 {/* State Licenses Accordion Item */}
                 <AccordionItem value="state-licenses">
-                  <AccordionTrigger>State Licenses</AccordionTrigger>
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger>State Licenses</AccordionTrigger>
+                    {selectedStates.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedStates([]);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <AccordionContent>
                     <div className="space-y-2">
                       {facetDistribution['StateLicenses.State'] && 
@@ -372,7 +452,22 @@ export default function Home() {
 
                 {/* License Titles Accordion Item */}
                 <AccordionItem value="license-titles">
-                  <AccordionTrigger>License Titles</AccordionTrigger>
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger>License Titles</AccordionTrigger>
+                    {selectedLicenseTitles.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedLicenseTitles([]);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <AccordionContent>
                     <div className="space-y-2">
                       {facetDistribution['StateLicenses.LicenseTitle'] && 
