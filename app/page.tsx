@@ -170,34 +170,6 @@ export default function Home() {
     fetchAllFacets();
   }, []); // Run once on mount
 
-  // Create a helper function to merge facet distributions
-  const mergeFacetDistributions = (current: FacetDistribution, all: FacetDistribution) => {
-    const merged: FacetDistribution = {};
-
-    // Get all facet keys
-    const facetKeys = new Set([
-      ...Object.keys(current),
-      ...Object.keys(all)
-    ]);
-
-    facetKeys.forEach(key => {
-      merged[key] = {};
-      
-      // Get all possible values for this facet
-      const allValues = new Set([
-        ...Object.keys(current[key] || {}),
-        ...Object.keys(all[key] || {})
-      ]);
-
-      // For each value, use current count if available, otherwise 0
-      allValues.forEach(value => {
-        merged[key][value] = current[key]?.[value] || 0;
-      });
-    });
-
-    return merged;
-  };
-
   return (
     <div className="min-h-screen p-4">
       {/* Header with search input */}
