@@ -69,13 +69,6 @@ interface FacetDistribution {
   };
 }
 
-interface FacetStats {
-  [key: string]: {
-    min: number;
-    max: number;
-  };
-}
-
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmbedder, setSelectedEmbedder] = useState('default');
@@ -87,7 +80,6 @@ export default function Home() {
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const [selectedLicenseTitles, setSelectedLicenseTitles] = useState<string[]>([]);
   const [facetDistribution, setFacetDistribution] = useState<FacetDistribution>({});
-  const [facetStats, setFacetStats] = useState<FacetStats>({});
   const [allPossibleFacets, setAllPossibleFacets] = useState<FacetDistribution>({});
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
 
@@ -174,8 +166,6 @@ export default function Home() {
       setFacetDistribution(
         mergeFacetDistributions(results.facetDistribution || {}, allPossibleFacets)
       );
-      
-      setFacetStats(results.facetStats || {});
     };
 
     searchProfessionals();
