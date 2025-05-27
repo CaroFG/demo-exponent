@@ -74,7 +74,7 @@ interface FacetDistribution {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmbedder, setSelectedEmbedder] = useState('default');
-  const [semanticRatio, setSemanticRatio] = useState(1.0);
+  const [semanticRatio, setSemanticRatio] = useState(0.5);
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [selectedOfficeLocations, setSelectedOfficeLocations] = useState<string[]>([]);
   const [selectedExpertise, setSelectedExpertise] = useState<string[]>([]);
